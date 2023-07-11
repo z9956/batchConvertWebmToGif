@@ -1,6 +1,9 @@
 import { existsSync } from "https://deno.land/std/fs/mod.ts";
 
-async function convertWebmToGif(inputPath: string, outputPath: string) {
+async function convertVideoToGif(
+  inputPath: string,
+  outputPath: string,
+) {
   const command = ["ffmpeg", "-i", inputPath, outputPath];
   const process = Deno.run({
     cmd: command,
@@ -12,19 +15,19 @@ async function convertWebmToGif(inputPath: string, outputPath: string) {
 
 async function batchConvertWebmToGif(
   inputFolder: string,
-  outputFolder: string
+  outputFolder: string,
+  fileSuffix = ".webm",
 ) {
   if (!existsSync(outputFolder)) {
     await Deno.mkdir(outputFolder, { recursive: true });
   }
 
   for (const entry of Deno.readDirSync(inputFolder)) {
-    if (entry.isFile && entry.name.endsWith(".webm")) {
+    if (entry.isFile && entry.name.endsWith(fileSuffix)) {
       const inputPath = `${inputFolder}/${entry.name}`;
-      const outputPath = `${outputFolder}/${entry.name.replace(
-        ".webm",
-        ".gif"
-      )}`;
+      const outputPath = `${outputFolder}/${
+        entry.name.replace(fileSuffix, ".gif")
+      }`;
 
       console.log(`Converting file: ${entry.name}`);
 
@@ -32,7 +35,7 @@ async function batchConvertWebmToGif(
         await Deno.remove(outputPath);
       }
 
-      await convertWebmToGif(inputPath, outputPath);
+      await convertVideoToGif(inputPath, outputPath);
     }
   }
 
